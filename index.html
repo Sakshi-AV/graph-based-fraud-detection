@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fraud Detection System</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Fraud Detection System</h1>
+
+    <div class="card">
+
+        <h2>Transaction Check</h2>
+
+        <div class="input-group">
+            <input type="text" id="sender" required>
+            <label>Sender</label>
+        </div>
+
+        <div class="input-group">
+            <input type="text" id="receiver" required>
+            <label>Receiver</label>
+        </div>
+
+        <div class="input-group">
+            <input type="number" id="amount" required>
+            <label>Amount</label>
+        </div>
+
+        <button onclick="checkFraud()">Analyze</button>
+
+        <div id="result" class="result-box"></div>
+
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
