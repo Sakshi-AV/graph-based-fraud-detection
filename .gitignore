@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local dataset copy. Keep the large CSV out of Git.
+PS_20174392719_1491204439457_log.csv
+
