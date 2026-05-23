@@ -1,29 +1,181 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Admin Dashboard</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - Graph Fraud Detection</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+<body data-page="admin">
+  <main class="admin-auth-shell" id="adminLoginView">
+    <form class="panel login-panel" id="adminLoginForm">
+      <a class="brand login-brand" href="index.html">
+        <span class="brand-mark">GF</span>
+        <span>
+          <strong>Graph Fraud Detection</strong>
+          <small>Admin access</small>
+        </span>
+      </a>
 
-<body>
+      <div>
+        <p class="eyebrow">Secure area</p>
+        <h1>Admin login</h1>
+        <p class="hero-copy">Sign in to view submitted transactions, fraud predictions, and model status.</p>
+      </div>
 
-<div class="container">
+      <label>
+        Username
+        <input id="adminUsername" name="username" type="text" autocomplete="username" required>
+      </label>
+      <label>
+        Password
+        <input id="adminPassword" name="password" type="password" autocomplete="current-password" required>
+      </label>
 
-<h1>Admin Dashboard</h1>
+      <button class="primary-action" type="submit">Log in</button>
+      <p class="form-message" id="loginMessage" aria-live="polite"></p>
+      <a class="text-link" href="index.html">Back to monitor</a>
+    </form>
+  </main>
 
-<div class="card">
+  <div class="admin-dashboard hidden" id="adminDashboard">
+    <header class="topbar">
+      <a class="brand" href="index.html">
+        <span class="brand-mark">GF</span>
+        <span>
+          <strong>Graph Fraud Detection</strong>
+          <small>ML transaction monitoring</small>
+        </span>
+      </a>
 
-<h2>System Overview</h2>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="index.html">Monitor</a>
+        <a href="admin.html" aria-current="page">Model Admin</a>
+        <button class="nav-button" id="logoutButton" type="button">Logout</button>
+      </nav>
+    </header>
 
-<ul>
-<li>Total Transactions: 1200</li>
-<li>Frauds Detected: 85</li>
-<li>Active Alerts: 5</li>
-</ul>
+    <main class="app-shell">
+      <section class="hero-panel admin-hero">
+        <div>
+          <p class="eyebrow">Model operations</p>
+          <h1>Training status and transaction oversight.</h1>
+          <p class="hero-copy">
+            This dashboard is visible only after admin login and shows transactions submitted through the Flask backend.
+          </p>
+        </div>
+        <div class="status-strip" aria-label="Model status">
+          <div>
+            <span>Precision</span>
+            <strong>1.00</strong>
+          </div>
+          <div>
+            <span>Recall</span>
+            <strong>0.43</strong>
+          </div>
+          <div>
+            <span>F1-score</span>
+            <strong>0.61</strong>
+          </div>
+        </div>
+      </section>
 
-</div>
+      <section class="analytics-grid">
+        <article class="metric-card">
+          <span>Total submissions</span>
+          <strong id="adminTotal">0</strong>
+        </article>
+        <article class="metric-card">
+          <span>Fraud predictions</span>
+          <strong id="adminFlagged">0</strong>
+        </article>
+        <article class="metric-card">
+          <span>Average risk</span>
+          <strong id="adminAverageRisk">0%</strong>
+        </article>
+        <article class="metric-card">
+          <span>Model source</span>
+          <strong>model.pkl</strong>
+        </article>
+      </section>
 
-</div>
+      <section class="workspace-grid">
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Pipeline</p>
+              <h2>Core modules</h2>
+            </div>
+          </div>
 
+          <ol class="pipeline-list">
+            <li>
+              <strong>preprocessing.py</strong>
+              <span>Loads the PaySim CSV, drops nulls, one-hot encodes type, and keeps account IDs for graph work.</span>
+            </li>
+            <li>
+              <strong>graph_builder.py</strong>
+              <span>Builds a NetworkX directed graph where accounts are nodes and transaction amounts are edge weights.</span>
+            </li>
+            <li>
+              <strong>feature_engineering.py</strong>
+              <span>Calculates degree, PageRank, and clustering coefficient for transaction-level features.</span>
+            </li>
+            <li>
+              <strong>predict.py</strong>
+              <span>Updates the graph dynamically and returns fraud prediction plus probability.</span>
+            </li>
+          </ol>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Evaluation</p>
+              <h2>Baseline model report</h2>
+            </div>
+          </div>
+          <canvas id="modelChart" height="180"></canvas>
+          <div class="note-panel">
+            <strong>What the terminal output means</strong>
+            <p>
+              Class 0 is legitimate transactions and class 1 is fraud. Fraud is rare, so the first baseline has strong
+              precision with lower recall.
+            </p>
+          </div>
+        </section>
+      </section>
+
+      <section class="panel admin-table-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">All user submissions</p>
+            <h2>Transaction history</h2>
+          </div>
+          <button class="secondary-action" id="refreshAdminButton" type="button">Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Time</th>
+                <th>Sender</th>
+                <th>Receiver</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Prediction</th>
+                <th>Probability</th>
+              </tr>
+            </thead>
+            <tbody id="adminTransactionsTable"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
