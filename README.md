@@ -39,3 +39,32 @@ python src/predict.py
 ```
 
 The trained baseline model is saved to `models/model.pkl`, and the matching feature order is saved to `models/feature_columns.pkl`.
+
+## Run Frontend + Backend Together
+
+Start the Flask backend from the project root:
+
+```bash
+python app.py
+```
+
+Then open:
+
+```text
+http://127.0.0.1:5000
+```
+
+The transaction form calls the trained model through `/api/predict`.
+
+Admin page:
+
+```text
+http://127.0.0.1:5000/admin
+```
+
+Development admin credentials:
+
+```text
+Username: admin
+Password: GraphAdmin#2026
+```

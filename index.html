@@ -1,453 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Fraud Detection</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Graph Fraud Detection</title>
+  <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', sans-serif;
-    }
-
-    body {
-      min-height: 100vh;
-      overflow-x: hidden;
-      background: #050816;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-    }
-
-    /* Animated background */
-    body::before {
-      content: "";
-      position: absolute;
-      width: 700px;
-      height: 700px;
-      background: radial-gradient(circle, rgba(0,255,255,0.15), transparent 70%);
-      animation: pulse 5s infinite alternate;
-      z-index: 0;
-    }
-
-    @keyframes pulse {
-      from {
-        transform: scale(1);
-      }
-      to {
-        transform: scale(1.2);
-      }
-    }
-
-    .container {
-      width: 95%;
-      max-width: 1300px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 25px;
-      z-index: 2;
-      padding: 20px;
-    }
-
-    .glass {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.1);
-      backdrop-filter: blur(20px);
-      border-radius: 25px;
-      padding: 25px;
-      box-shadow: 0 0 25px rgba(0,255,255,0.15);
-      transition: 0.4s;
-    }
-
-    .glass:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 0 40px rgba(0,255,255,0.3);
-    }
-
-    h1 {
-      font-size: 40px;
-      margin-bottom: 10px;
-      background: linear-gradient(to right, cyan, #00ff88);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .subtitle {
-      color: #b8b8b8;
-      margin-bottom: 25px;
-    }
-
-    .input-box {
-      margin-bottom: 20px;
-      position: relative;
-    }
-
-    .input-box input {
-      width: 100%;
-      padding: 15px;
-      border-radius: 12px;
-      border: none;
-      background: rgba(255,255,255,0.08);
-      color: white;
-      outline: none;
-      font-size: 15px;
-      transition: 0.3s;
-    }
-
-    .input-box input:focus {
-      border: 1px solid cyan;
-      box-shadow: 0 0 15px cyan;
-    }
-
-    .scan-btn {
-      width: 100%;
-      padding: 15px;
-      border: none;
-      border-radius: 15px;
-      background: linear-gradient(90deg, cyan, #00ff88);
-      color: black;
-      font-size: 17px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.4s;
-    }
-
-    .scan-btn:hover {
-      transform: scale(1.03);
-      box-shadow: 0 0 20px cyan;
-    }
-
-    .result {
-      margin-top: 25px;
-      padding: 20px;
-      border-radius: 15px;
-      text-align: center;
-      font-size: 22px;
-      font-weight: bold;
-      display: none;
-      animation: fadeIn 1s ease;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .safe {
-      background: rgba(0,255,100,0.15);
-      border: 1px solid #00ff88;
-      color: #00ff88;
-    }
-
-    .fraud {
-      background: rgba(255,0,80,0.15);
-      border: 1px solid #ff0055;
-      color: #ff4b7d;
-    }
-
-    .live-box {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 20px;
-      gap: 15px;
-    }
-
-    .mini-card {
-      flex: 1;
-      background: rgba(255,255,255,0.05);
-      padding: 18px;
-      border-radius: 15px;
-      text-align: center;
-    }
-
-    .mini-card h2 {
-      font-size: 30px;
-      margin-top: 10px;
-      color: cyan;
-    }
-
-    canvas {
-      margin-top: 15px;
-      background: rgba(255,255,255,0.03);
-      border-radius: 15px;
-      padding: 10px;
-    }
-
-    .cyber-alert {
-      margin-top: 20px;
-      padding: 15px;
-      border-left: 5px solid #ff0055;
-      background: rgba(255,0,80,0.1);
-      border-radius: 10px;
-      animation: blink 1.5s infinite;
-    }
-
-    @keyframes blink {
-      50% {
-        opacity: 0.5;
-      }
-    }
-
-    .network {
-      width: 100%;
-      height: 250px;
-      position: relative;
-      overflow: hidden;
-      margin-top: 20px;
-    }
-
-    .node {
-      width: 18px;
-      height: 18px;
-      background: cyan;
-      border-radius: 50%;
-      position: absolute;
-      box-shadow: 0 0 15px cyan;
-      animation: float 4s infinite alternate;
-    }
-
-    .line {
-      position: absolute;
-      height: 2px;
-      background: rgba(0,255,255,0.5);
-      transform-origin: left center;
-    }
-
-    @keyframes float {
-      from {
-        transform: translateY(0px);
-      }
-      to {
-        transform: translateY(-15px);
-      }
-    }
-
-    /* Animated AI Bot */
-    .floating-bot {
-      position: absolute;
-      top: 30px;
-      right: 40px;
-      z-index: 10;
-      animation: botFloat 3s ease-in-out infinite;
-    }
-
-    .bot-head {
-      width: 90px;
-      height: 90px;
-      background: rgba(0,255,255,0.15);
-      border: 2px solid rgb(163, 54, 82);
-      border-radius: 25px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 15px;
-      box-shadow: 0 0 25px rgb(153, 9, 146);
-      backdrop-filter: blur(10px);
-    }
-
-    .eye {
-      width: 12px;
-      height: 12px;
-      background: cyan;
-      border-radius: 50%;
-      box-shadow: 0 0 15px cyan;
-      animation: blinkEye 1.5s infinite;
-    }
-
-    .bot-body {
-      width: 55px;
-      height: 80px;
-      background: rgba(0,255,255,0.1);
-      border: 2px solid cyan;
-      margin: auto;
-      margin-top: 10px;
-      border-radius: 15px;
-      box-shadow: 0 0 20px cyan;
-    }
-
-    @keyframes botFloat {
-      0% {
-        transform: translateY(0px);
-      }
-      50% {
-        transform: translateY(-15px);
-      }
-      100% {
-        transform: translateY(0px);
-      }
-    }
-
-    @keyframes blinkEye {
-      0%, 90%, 100% {
-        transform: scaleY(1);
-      }
-      95% {
-        transform: scaleY(0.1);
-      }
-    }
-
-    @media(max-width: 900px){
-      .container {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
 </head>
-<body>
+<body data-page="monitor">
+  <header class="topbar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">GF</span>
+      <span>
+        <strong>Graph Fraud Detection</strong>
+        <small>ML transaction monitoring</small>
+      </span>
+    </a>
 
-<div class="floating-bot">
-  <div class="bot-head">
-    <div class="eye"></div>
-    <div class="eye"></div>
-  </div>
-  <div class="bot-body"></div>
-</div>
+    <nav class="nav-links" aria-label="Primary navigation">
+      <a href="index.html" aria-current="page">Monitor</a>
+      <a href="admin.html">Model Admin</a>
+    </nav>
+  </header>
 
-<div class="container">
-
-  <!-- Left -->
-  <div class="glass">
-    <h1>AI Fraud Detection</h1>
-    <p class="subtitle">Graph-Based Cyber Fraud Monitoring System</p>
-
-    <div class="input-box">
-      <input type="text" id="sender" placeholder="Sender Account ID">
-    </div>
-
-    <div class="input-box">
-      <input type="text" id="receiver" placeholder="Receiver Account ID">
-    </div>
-
-    <div class="input-box">
-      <input type="number" id="amount" placeholder="Transaction Amount">
-    </div>
-
-    <button class="scan-btn" onclick="detectFraud()">SCAN TRANSACTION</button>
-
-    <div id="result" class="result"></div>
-
-    <div class="cyber-alert">
-      ⚠ Real-Time AI monitoring active for suspicious financial activities.
-    </div>
-
-    <div class="network">
-      <div class="node" style="top:20px; left:30px"></div>
-      <div class="node" style="top:120px; left:180px"></div>
-      <div class="node" style="top:70px; left:320px"></div>
-      <div class="node" style="top:170px; left:450px"></div>
-
-      <div class="line" style="top:30px; left:45px; width:160px; transform:rotate(28deg)"></div>
-      <div class="line" style="top:130px; left:195px; width:150px; transform:rotate(-18deg)"></div>
-      <div class="line" style="top:85px; left:335px; width:160px; transform:rotate(35deg)"></div>
-    </div>
-  </div>
-
-  <!-- Right -->
-  <div class="glass">
-    <h1>Live Analytics</h1>
-    <p class="subtitle">Real-Time Fraud Probability Dashboard</p>
-
-    <div class="live-box">
-      <div class="mini-card">
-        Transactions
-        <h2 id="tx">2450</h2>
+  <main class="app-shell">
+    <section class="hero-panel">
+      <div>
+        <p class="eyebrow">Week 1-2 ML core</p>
+        <h1>Assess transaction risk with graph-aware signals.</h1>
+        <p class="hero-copy">
+          The Python pipeline trains the Random Forest model. This page sends each transaction to the Flask backend,
+          runs the saved model, and updates the graph dashboard from the model response.
+        </p>
       </div>
 
-      <div class="mini-card">
-        Fraud Alerts
-        <h2 id="fraudCount">12</h2>
+      <div class="status-strip" aria-label="Pipeline status">
+        <div>
+          <span>Dataset rows</span>
+          <strong>100,000</strong>
+        </div>
+        <div>
+          <span>Model</span>
+          <strong>Random Forest</strong>
+        </div>
+        <div>
+          <span>Graph features</span>
+          <strong>Degree, PageRank, clustering</strong>
+        </div>
       </div>
+    </section>
 
-      <div class="mini-card">
-        Risk Score
-        <h2 id="risk">67%</h2>
-      </div>
-    </div>
+    <section class="workspace-grid">
+      <form class="panel transaction-panel" id="transactionForm">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Transaction scanner</p>
+            <h2>New transaction</h2>
+          </div>
+          <span class="mode-badge">Live model API</span>
+        </div>
 
-    <canvas id="fraudChart"></canvas>
-    <canvas id="riskChart"></canvas>
+        <div class="field-grid">
+          <label>
+            Sender account
+            <input id="sender" name="sender" type="text" autocomplete="off" placeholder="C1231006815" required>
+          </label>
+          <label>
+            Receiver account
+            <input id="receiver" name="receiver" type="text" autocomplete="off" placeholder="M1979787155" required>
+          </label>
+          <label>
+            Amount
+            <input id="amount" name="amount" type="number" min="1" step="0.01" placeholder="9839.64" required>
+          </label>
+          <label>
+            Type
+            <select id="type" name="type">
+              <option value="PAYMENT">PAYMENT</option>
+              <option value="TRANSFER">TRANSFER</option>
+              <option value="CASH_OUT">CASH_OUT</option>
+              <option value="DEBIT">DEBIT</option>
+              <option value="CASH_IN">CASH_IN</option>
+            </select>
+          </label>
+        </div>
 
-  </div>
+        <div class="quick-actions" aria-label="Sample transaction presets">
+          <button type="button" data-sample="normal">Load normal sample</button>
+          <button type="button" data-sample="highRisk">Load high-risk sample</button>
+        </div>
 
-</div>
+        <button class="primary-action" type="submit">Assess risk</button>
 
-<script>
+        <section class="result-card neutral" id="resultCard" aria-live="polite">
+          <span class="result-label">Awaiting transaction</span>
+          <strong id="resultTitle">No scan yet</strong>
+          <p id="resultText">Enter a transaction to call the backend model and update the graph dashboard.</p>
+          <div class="risk-meter" aria-hidden="true">
+            <span id="riskFill"></span>
+          </div>
+        </section>
+      </form>
 
-const ctx = document.getElementById('fraudChart');
-const fraudChart = new Chart(ctx, {
-  type: 'line',
-  data: {
-    labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-    datasets: [{
-      label: 'Fraud Attempts',
-      data: [12,19,7,15,22,18,30],
-      borderColor: 'cyan',
-      tension: 0.4
-    }]
-  }
-});
+      <section class="panel graph-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Account network</p>
+            <h2>Live graph view</h2>
+          </div>
+          <span id="graphSummary" class="mode-badge">0 nodes</span>
+        </div>
+        <canvas id="networkCanvas" width="760" height="420" aria-label="Transaction network graph"></canvas>
+      </section>
+    </section>
 
-const ctx2 = document.getElementById('riskChart');
-const riskChart = new Chart(ctx2, {
-  type: 'bar',
-  data: {
-    labels: ['A1','A2','A3','A4','A5'],
-    datasets: [{
-      label: 'Risk Score',
-      data: [20,75,40,90,55],
-      backgroundColor: ['cyan','#00ff88','#ff0055','#ffcc00','#7d5fff']
-    }]
-  }
-});
+    <section class="analytics-grid">
+      <article class="metric-card">
+        <span>Total transactions</span>
+        <strong id="totalTransactions">0</strong>
+      </article>
+      <article class="metric-card">
+        <span>Flagged risk</span>
+        <strong id="flaggedTransactions">0</strong>
+      </article>
+      <article class="metric-card">
+        <span>Average risk</span>
+        <strong id="averageRisk">0%</strong>
+      </article>
+      <article class="metric-card">
+        <span>Known accounts</span>
+        <strong id="knownAccounts">0</strong>
+      </article>
+    </section>
 
-function detectFraud(){
+    <section class="workspace-grid bottom-grid">
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Risk trend</p>
+            <h2>Latest scans</h2>
+          </div>
+        </div>
+        <canvas id="riskChart" height="160"></canvas>
+      </section>
 
-  let sender = document.getElementById('sender').value;
-  let receiver = document.getElementById('receiver').value;
-  let amount = document.getElementById('amount').value;
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Recent transactions</p>
+            <h2>Audit trail</h2>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Sender</th>
+                <th>Receiver</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Risk</th>
+              </tr>
+            </thead>
+            <tbody id="transactionTable"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
 
-  const result = document.getElementById('result');
-
-  if(sender === '' || receiver === '' || amount === ''){
-    result.style.display = 'block';
-    result.className = 'result fraud';
-    result.innerHTML = '❌ Please fill all fields';
-    return;
-  }
-
-  // Better logic
-  if(amount > 10000){
-    result.style.display = 'block';
-    result.className = 'result fraud';
-    result.innerHTML = '🚨 FRAUD DETECTED — High Risk Transaction';
-
-    document.getElementById('fraudCount').innerHTML = parseInt(document.getElementById('fraudCount').innerHTML) + 1;
-  }
-  else {
-    result.style.display = 'block';
-    result.className = 'result safe';
-    result.innerHTML = '✅ SAFE TRANSACTION — No Threat Found';
-  }
-
-  // live updates
-  document.getElementById('tx').innerHTML = parseInt(document.getElementById('tx').innerHTML) + 1;
-
-  let randomRisk = Math.floor(Math.random() * 100);
-  document.getElementById('risk').innerHTML = randomRisk + '%';
-}
-
-</script>
-
+  <script src="script.js"></script>
 </body>
 </html>

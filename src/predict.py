@@ -45,6 +45,7 @@ def _build_prediction_row(
     amount: float,
     graph: nx.DiGraph,
     feature_columns: list[str],
+    transaction_type: str = "PAYMENT",
 ) -> pd.DataFrame:
     """Create a model-ready dataframe for one transaction."""
     graph_features = compute_graph_features(graph)
@@ -65,7 +66,10 @@ def _build_prediction_row(
     row["sender_clustering"] = graph_features["clustering"].get(sender, 0.0)
     row["receiver_clustering"] = graph_features["clustering"].get(receiver, 0.0)
 
-    # A standalone prediction does not receive transaction type yet, so type columns remain 0.
+    type_column = f"type_{transaction_type.upper()}"
+    if type_column in row:
+        row[type_column] = 1
+
     return pd.DataFrame([row], columns=feature_columns)
 
 
@@ -73,16 +77,27 @@ def predict_transaction(
     sender: str,
     receiver: str,
     amount: float,
+    transaction_type: str = "PAYMENT",
     graph: nx.DiGraph | None = None,
+    model: object | None = None,
+    feature_columns: list[str] | None = None,
 ) -> dict[str, float | int]:
     """Update the graph, run fraud prediction, and return label plus probability."""
-    model, feature_columns = load_prediction_artifacts()
+    if model is None or feature_columns is None:
+        model, feature_columns = load_prediction_artifacts()
 
     if graph is None:
         graph = initialize_graph()
 
     update_transaction_graph(graph, sender, receiver, float(amount))
-    prediction_row = _build_prediction_row(sender, receiver, float(amount), graph, feature_columns)
+    prediction_row = _build_prediction_row(
+        sender,
+        receiver,
+        float(amount),
+        graph,
+        feature_columns,
+        transaction_type=transaction_type,
+    )
 
     prediction = int(model.predict(prediction_row)[0])
     probability = float(model.predict_proba(prediction_row)[0][1])
