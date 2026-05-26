@@ -501,6 +501,28 @@ td {
   margin-top: 18px;
 }
 
+.insight-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.insight-list li {
+  display: grid;
+  gap: 5px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 13px;
+}
+
+.insight-list span {
+  color: #cbd6df;
+  line-height: 1.45;
+}
+
 .risk-low {
   color: var(--green);
 }

@@ -90,9 +90,28 @@
           <span>Fraud predictions</span>
           <strong id="adminFlagged">0</strong>
         </article>
+      <article class="metric-card">
+        <span>Average risk</span>
+        <strong id="adminAverageRisk">0%</strong>
+      </article>
+      <article class="metric-card">
+        <span>Fraud percentage</span>
+        <strong id="adminFraudPercentage">0%</strong>
+      </article>
+    </section>
+
+      <section class="analytics-grid">
         <article class="metric-card">
-          <span>Average risk</span>
-          <strong id="adminAverageRisk">0%</strong>
+          <span>Total users</span>
+          <strong id="adminTotalUsers">0</strong>
+        </article>
+        <article class="metric-card">
+          <span>Active users</span>
+          <strong id="adminActiveUsers">0</strong>
+        </article>
+        <article class="metric-card">
+          <span>Flagged users</span>
+          <strong id="adminFlaggedUsers">0</strong>
         </article>
         <article class="metric-card">
           <span>Model source</span>
@@ -144,6 +163,33 @@
               precision with lower recall.
             </p>
           </div>
+        </section>
+      </section>
+
+      <section class="workspace-grid bottom-grid">
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Admin alerts</p>
+              <h2>Suspicious activity</h2>
+            </div>
+          </div>
+          <ul class="insight-list" id="adminAlertsList">
+            <li>No alerts yet.</li>
+          </ul>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Risk visualization</p>
+              <h2>Top risky accounts</h2>
+            </div>
+            <a class="mode-badge" href="graph" target="_blank" rel="noopener">Open graph</a>
+          </div>
+          <ul class="insight-list" id="topRiskyAccounts">
+            <li>No risky accounts yet.</li>
+          </ul>
         </section>
       </section>
 

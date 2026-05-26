@@ -39,6 +39,18 @@ document.addEventListener("DOMContentLoaded", () => {
   if (page === "admin") {
     initAdminPage();
   }
+
+  if (page === "login") {
+    initLoginPage();
+  }
+
+  if (page === "register") {
+    initRegisterPage();
+  }
+
+  if (page === "user-dashboard") {
+    initUserDashboardPage();
+  }
 });
 
 function initMonitorPage() {
@@ -64,6 +76,19 @@ async function initAdminPage() {
     showAdminDashboard();
     await loadAdminTransactions();
   }
+}
+
+function initLoginPage() {
+  document.getElementById("userLoginForm").addEventListener("submit", handleUserLogin);
+}
+
+function initRegisterPage() {
+  document.getElementById("registerForm").addEventListener("submit", handleUserRegister);
+}
+
+async function initUserDashboardPage() {
+  document.getElementById("userLogoutButton").addEventListener("click", handleUserLogout);
+  await loadUserDashboard();
 }
 
 function loadSample(sampleName) {
@@ -115,7 +140,7 @@ async function handleTransactionSubmit(event) {
     const result = {
       risk,
       label: prediction.fraud_prediction === 1 ? "Fraud predicted" : "Likely legitimate",
-      message: `Model probability: ${formatPercent(prediction.fraud_probability)}. This result came from models/model.pkl through the Flask backend.`,
+      message: `Model probability: ${formatPercent(prediction.fraud_probability)} using threshold ${formatPercent(prediction.threshold)}. Alerts: ${prediction.alerts?.length || 0}.`,
       level: prediction.fraud_prediction === 1 ? "danger" : risk >= 40 ? "warn" : "safe"
     };
 
@@ -175,6 +200,68 @@ async function handleAdminLogin(event) {
   await loadAdminTransactions();
 }
 
+async function handleUserLogin(event) {
+  event.preventDefault();
+  setText("userLoginMessage", "");
+
+  const result = await requestJson("/api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: document.getElementById("loginUsername").value.trim(),
+      password: document.getElementById("loginPassword").value
+    })
+  });
+
+  if (result?.error) {
+    setText("userLoginMessage", result.error);
+    return;
+  }
+
+  window.location.href = "user-dashboard";
+}
+
+async function handleUserRegister(event) {
+  event.preventDefault();
+  setText("registerMessage", "");
+
+  const result = await requestJson("/api/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: document.getElementById("registerUsername").value.trim(),
+      password: document.getElementById("registerPassword").value
+    })
+  });
+
+  if (result?.error) {
+    setText("registerMessage", result.error);
+    return;
+  }
+
+  window.location.href = "user-dashboard";
+}
+
+async function handleUserLogout() {
+  await requestJson("/api/logout", { method: "POST" });
+  window.location.href = "login";
+}
+
+async function loadUserDashboard() {
+  const result = await requestJson("/api/user/dashboard");
+  if (result?.error) {
+    window.location.href = "login";
+    return;
+  }
+
+  setText("userDashboardTitle", `Welcome, ${result.user.username}`);
+  setText("userAccountText", `Account ID: ${result.user.account_id}`);
+  setText("userTotalTransactions", result.metrics.total);
+  setText("userFlaggedTransactions", result.metrics.flagged);
+  setText("userPersonalRisk", `${result.metrics.personal_risk}%`);
+  renderUserTransactionTable(result.transactions);
+}
+
 async function handleAdminLogout() {
   await requestJson("/api/admin/logout", { method: "POST" });
   document.getElementById("adminDashboard").classList.add("hidden");
@@ -196,7 +283,13 @@ async function loadAdminTransactions() {
   setText("adminTotal", result.metrics.total);
   setText("adminFlagged", result.metrics.flagged);
   setText("adminAverageRisk", `${result.metrics.average_risk}%`);
+  setText("adminTotalUsers", result.metrics.total_users);
+  setText("adminActiveUsers", result.metrics.active_users);
+  setText("adminFlaggedUsers", result.metrics.flagged_users);
+  setText("adminFraudPercentage", `${result.metrics.fraud_percentage}%`);
   renderAdminTransactionTable(result.transactions);
+  renderAdminAlerts(result.alerts || []);
+  renderTopRiskyAccounts(result.top_risky_accounts || []);
 }
 
 function renderAdminTransactionTable(transactions) {
@@ -227,6 +320,72 @@ function renderAdminTransactionTable(transactions) {
       </tr>
     `;
   }).join("");
+}
+
+function renderUserTransactionTable(transactions) {
+  const table = document.getElementById("userTransactionsTable");
+  if (!table) {
+    return;
+  }
+
+  if (!transactions.length) {
+    table.innerHTML = '<tr><td colspan="7">No transactions yet. Submit one from the monitor page.</td></tr>';
+    return;
+  }
+
+  table.innerHTML = transactions.map((transaction) => {
+    const riskClass = transaction.fraud_prediction === 1 ? "risk-high" : "risk-low";
+    const predictionText = transaction.fraud_prediction === 1 ? "Fraud" : "Legitimate";
+    return `
+      <tr>
+        <td>${escapeHtml(transaction.id)}</td>
+        <td>${formatTime(transaction.timestamp)}</td>
+        <td>${escapeHtml(transaction.receiver)}</td>
+        <td>${escapeHtml(transaction.type)}</td>
+        <td>${formatCurrency(transaction.amount)}</td>
+        <td class="${riskClass}">${predictionText}</td>
+        <td>${formatPercent(transaction.fraud_probability)}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function renderAdminAlerts(alerts) {
+  const list = document.getElementById("adminAlertsList");
+  if (!list) {
+    return;
+  }
+
+  if (!alerts.length) {
+    list.innerHTML = "<li>No alerts yet.</li>";
+    return;
+  }
+
+  list.innerHTML = alerts.slice(0, 8).map((alert) => `
+    <li>
+      <strong>${escapeHtml(alert.alert_type)}</strong>
+      <span>${escapeHtml(alert.message)}</span>
+    </li>
+  `).join("");
+}
+
+function renderTopRiskyAccounts(accounts) {
+  const list = document.getElementById("topRiskyAccounts");
+  if (!list) {
+    return;
+  }
+
+  if (!accounts.length) {
+    list.innerHTML = "<li>No risky accounts yet.</li>";
+    return;
+  }
+
+  list.innerHTML = accounts.map((account) => `
+    <li>
+      <strong>${escapeHtml(account.account_id)}</strong>
+      <span>${formatPercent(account.average_probability)} average risk across ${account.total} transaction(s)</span>
+    </li>
+  `).join("");
 }
 
 async function requestJson(url, options = {}) {
