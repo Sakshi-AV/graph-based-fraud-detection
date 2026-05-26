@@ -5,4 +5,8 @@ networkx
 joblib
 xgboost
 Flask
+pyvis
+bcrypt
+matplotlib
+# sqlite3 is included with Python standard library.
 
