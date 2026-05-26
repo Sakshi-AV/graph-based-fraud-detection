@@ -7,7 +7,7 @@ from pathlib import Path
 import joblib
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report, f1_score, precision_score, recall_score
+from sklearn.metrics import classification_report, confusion_matrix, f1_score, precision_score, recall_score
 from sklearn.model_selection import train_test_split
 
 try:
@@ -21,19 +21,37 @@ except ImportError:
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MODEL_PATH = PROJECT_ROOT / "models" / "model.pkl"
 FEATURE_COLUMNS_PATH = PROJECT_ROOT / "models" / "feature_columns.pkl"
+MODEL_METADATA_PATH = PROJECT_ROOT / "models" / "model_metadata.pkl"
 TARGET_COLUMN = "isFraud"
 NON_FEATURE_COLUMNS = {"nameOrig", "nameDest", TARGET_COLUMN}
+FRAUD_THRESHOLD = 0.20
 
 
 def prepare_training_data(dataset_path: str | Path = DEFAULT_DATASET_PATH, nrows: int = 100000) -> tuple[pd.DataFrame, pd.Series]:
     """Create model-ready features and labels from the raw dataset."""
     transactions, _ = preprocess_dataset(dataset_path=dataset_path, nrows=nrows)
     featured_transactions = add_graph_features(transactions)
+    balanced_transactions = create_balanced_dataset(featured_transactions)
 
-    y = featured_transactions[TARGET_COLUMN]
-    X = featured_transactions.drop(columns=[column for column in NON_FEATURE_COLUMNS if column in featured_transactions.columns])
+    y = balanced_transactions[TARGET_COLUMN]
+    X = balanced_transactions.drop(columns=[column for column in NON_FEATURE_COLUMNS if column in balanced_transactions.columns])
 
     return X, y
+
+
+def create_balanced_dataset(data: pd.DataFrame, random_state: int = 42) -> pd.DataFrame:
+    """Balance fraud data with a 1:3 fraud-to-normal sample."""
+    fraud = data[data[TARGET_COLUMN] == 1]
+    normal = data[data[TARGET_COLUMN] == 0]
+
+    if fraud.empty:
+        raise ValueError("No fraud rows found in the training sample.")
+
+    normal_sample_size = min(len(normal), len(fraud) * 3)
+    normal_sample = normal.sample(normal_sample_size, random_state=random_state)
+    balanced_data = pd.concat([fraud, normal_sample], ignore_index=True)
+
+    return balanced_data.sample(frac=1, random_state=random_state).reset_index(drop=True)
 
 
 def train_model(X: pd.DataFrame, y: pd.Series) -> RandomForestClassifier:
@@ -50,7 +68,8 @@ def train_model(X: pd.DataFrame, y: pd.Series) -> RandomForestClassifier:
 
 def evaluate_model(model: RandomForestClassifier, X_test: pd.DataFrame, y_test: pd.Series) -> dict[str, float]:
     """Evaluate with precision, recall, and f1-score."""
-    predictions = model.predict(X_test)
+    probabilities = model.predict_proba(X_test)[:, 1]
+    predictions = (probabilities > FRAUD_THRESHOLD).astype(int)
 
     metrics = {
         "precision": precision_score(y_test, predictions, zero_division=0),
@@ -59,6 +78,8 @@ def evaluate_model(model: RandomForestClassifier, X_test: pd.DataFrame, y_test: 
     }
 
     print(classification_report(y_test, predictions, zero_division=0))
+    print("Confusion matrix:")
+    print(confusion_matrix(y_test, predictions))
     return metrics
 
 
@@ -67,6 +88,7 @@ def save_model(model: RandomForestClassifier, feature_columns: list[str]) -> Non
     MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(model, MODEL_PATH)
     joblib.dump(feature_columns, FEATURE_COLUMNS_PATH)
+    joblib.dump({"fraud_threshold": FRAUD_THRESHOLD}, MODEL_METADATA_PATH)
 
 
 def train_and_save_model(dataset_path: str | Path = DEFAULT_DATASET_PATH, nrows: int = 100000) -> dict[str, float]:

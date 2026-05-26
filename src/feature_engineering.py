@@ -18,6 +18,12 @@ GRAPH_FEATURE_COLUMNS = [
     "receiver_pagerank",
     "sender_clustering",
     "receiver_clustering",
+    "sender_transaction_frequency",
+    "receiver_transaction_frequency",
+    "sender_total_outgoing_amount",
+    "receiver_total_incoming_amount",
+    "sender_suspicious_neighbor_count",
+    "receiver_suspicious_neighbor_count",
 ]
 
 
@@ -57,7 +63,41 @@ def map_graph_features_to_transactions(
     featured_df["sender_clustering"] = featured_df[sender_col].map(clustering).fillna(0.0)
     featured_df["receiver_clustering"] = featured_df[receiver_col].map(clustering).fillna(0.0)
 
+    outgoing_amount = featured_df.groupby(sender_col)["amount"].sum()
+    incoming_amount = featured_df.groupby(receiver_col)["amount"].sum()
+    sender_frequency = featured_df.groupby(sender_col).size()
+    receiver_frequency = featured_df.groupby(receiver_col).size()
+    suspicious_accounts = _find_suspicious_accounts(featured_df, sender_col, receiver_col)
+
+    featured_df["sender_transaction_frequency"] = featured_df[sender_col].map(sender_frequency).fillna(0)
+    featured_df["receiver_transaction_frequency"] = featured_df[receiver_col].map(receiver_frequency).fillna(0)
+    featured_df["sender_total_outgoing_amount"] = featured_df[sender_col].map(outgoing_amount).fillna(0.0)
+    featured_df["receiver_total_incoming_amount"] = featured_df[receiver_col].map(incoming_amount).fillna(0.0)
+    featured_df["sender_suspicious_neighbor_count"] = featured_df[sender_col].map(suspicious_accounts).fillna(0)
+    featured_df["receiver_suspicious_neighbor_count"] = featured_df[receiver_col].map(suspicious_accounts).fillna(0)
+
     return featured_df
+
+
+def _find_suspicious_accounts(
+    df: pd.DataFrame,
+    sender_col: str,
+    receiver_col: str,
+) -> pd.Series:
+    """Count high-risk neighbors using fraud labels when available."""
+    if "isFraud" not in df.columns:
+        return pd.Series(dtype=float)
+
+    fraud_rows = df[df["isFraud"] == 1]
+    suspicious_edges = pd.concat([
+        fraud_rows[[sender_col, receiver_col]].rename(columns={sender_col: "account", receiver_col: "neighbor"}),
+        fraud_rows[[receiver_col, sender_col]].rename(columns={receiver_col: "account", sender_col: "neighbor"}),
+    ])
+
+    if suspicious_edges.empty:
+        return pd.Series(dtype=float)
+
+    return suspicious_edges.groupby("account")["neighbor"].nunique()
 
 
 def add_graph_features(df: pd.DataFrame, graph: nx.DiGraph | None = None) -> pd.DataFrame:
