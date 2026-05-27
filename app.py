@@ -66,7 +66,12 @@ def load_runtime_artifacts() -> None:
 
 @app.route("/")
 def home():
+    # Landing page protection: unauthenticated users must login.
+    if not session.get("user_id"):
+        return send_from_directory(PROJECT_ROOT, "login.html"), 302, {"Location": "/login"}
     return send_from_directory(PROJECT_ROOT, "index.html")
+
+
 
 
 @app.route("/admin")
@@ -86,7 +91,12 @@ def register_page():
 
 @app.route("/user-dashboard")
 def user_dashboard_page():
+    # Enforce login at page-load time (UI route protection)
+    if not session.get("user_id"):
+        return send_from_directory(PROJECT_ROOT, "login.html"), 302, {"Location": "/login"}
     return send_from_directory(PROJECT_ROOT, "user-dashboard.html")
+
+
 
 
 @app.route("/graph")
