@@ -141,14 +141,18 @@ async function handleTransactionSubmit(event) {
       risk,
       label: prediction.fraud_prediction === 1 ? "Fraud predicted" : "Likely legitimate",
       message: `Model probability: ${formatPercent(prediction.fraud_probability)} using threshold ${formatPercent(prediction.threshold)}. Alerts: ${prediction.alerts?.length || 0}.`,
-      level: prediction.fraud_prediction === 1 ? "danger" : risk >= 40 ? "warn" : "safe"
+      level: prediction.fraud_prediction === 1 ? "danger" : risk >= 40 ? "warn" : "safe",
+      graph: { updated: true }
     };
 
     state.transactions.unshift({
       ...transaction,
       risk,
       prediction: prediction.fraud_prediction,
-      probability: prediction.fraud_probability
+      probability: prediction.fraud_probability,
+      // also store what backend returned so recent transactions table stays in sync
+      threshold: prediction.threshold,
+      alerts: prediction.alerts || []
     });
 
     updateResult(result);

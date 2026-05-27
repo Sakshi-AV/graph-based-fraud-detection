@@ -30,6 +30,11 @@ ADMIN_PASSWORD = "GraphAdmin#2026"
 app = Flask(__name__, static_folder=str(PROJECT_ROOT), static_url_path="")
 app.secret_key = "dev-graph-fraud-session-key"
 
+# Avoid startup failure when the training dataset is not present.
+# UI/ML logic is unchanged; we only make graph initialization resilient.
+DATASET_PATH = PROJECT_ROOT / "paysim_dataset.csv"
+
+
 TRANSACTION_HISTORY: list[dict] = []
 MODEL = None
 FEATURE_COLUMNS = None
@@ -46,7 +51,15 @@ def load_runtime_artifacts() -> None:
         MODEL, FEATURE_COLUMNS, FRAUD_THRESHOLD = load_prediction_artifacts()
 
     if TRANSACTION_GRAPH is None:
-        TRANSACTION_GRAPH = initialize_graph()
+        # If the training dataset is missing, keep the API usable by creating an empty graph.
+        # This does not change ML/UI logic—only prevents startup/runtime crashes.
+        try:
+            TRANSACTION_GRAPH = initialize_graph(dataset_path=DATASET_PATH)
+        except FileNotFoundError:
+            import networkx as nx
+
+            TRANSACTION_GRAPH = nx.DiGraph()
+
 
     init_db()
 
