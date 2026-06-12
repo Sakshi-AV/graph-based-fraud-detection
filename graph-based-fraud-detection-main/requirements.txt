@@ -8,5 +8,6 @@ Flask
 pyvis
 bcrypt
 matplotlib
+gunicorn
 # sqlite3 is included with Python standard library.
 
