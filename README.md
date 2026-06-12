@@ -12,6 +12,38 @@ This project explores fraud detection using graph-based techniques and machine l
 - Isolation Forest runtime anomaly alerts
 - PyVis graph export at `graph/graph.html`
 
+## Project Structure
+
+```text
+backend/
+  config.py
+  factory.py
+  runtime.py
+  routes/
+    admin.py
+    auth.py
+    pages.py
+    transactions.py
+  services/
+    anomaly.py
+    database.py
+    graph_visualizer.py
+    scoring.py
+
+frontend/
+  pages/
+  static/
+    css/
+    js/
+
+src/
+  preprocessing.py
+  graph_builder.py
+  feature_engineering.py
+  model.py
+  predict.py
+```
+
 ## Run Locally
 
 Install dependencies:

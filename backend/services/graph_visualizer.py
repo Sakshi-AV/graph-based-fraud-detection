@@ -8,7 +8,7 @@ import networkx as nx
 from pyvis.network import Network
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 GRAPH_DIR = PROJECT_ROOT / "graph"
 GRAPH_PATH = GRAPH_DIR / "graph.html"
 

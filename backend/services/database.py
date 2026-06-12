@@ -10,7 +10,7 @@ from typing import Any
 import bcrypt
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATABASE_DIR = PROJECT_ROOT / "database"
 DATABASE_PATH = DATABASE_DIR / "users.db"
 
