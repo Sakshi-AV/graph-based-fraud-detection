@@ -1,49 +1,85 @@
-import { postJson, requestJson } from "../api.js";
+import { postJson } from "../api.js";
 import { setText } from "../utils.js";
 
-export function initLoginPage() {
-  document.getElementById("userLoginForm").addEventListener("submit", handleUserLogin);
-}
+export function initAuthPage() {
+  const loginForm = document.getElementById("loginForm");
+  const registerForm = document.getElementById("registerForm");
+  const toggleAdminBtn = document.getElementById("toggleAdminBtn");
+  const loginTitle = document.getElementById("loginTitle");
+  const loginType = document.getElementById("loginType");
 
-export function initRegisterPage() {
-  document.getElementById("registerForm").addEventListener("submit", handleUserRegister);
-}
+  const tabs = document.querySelectorAll(".auth-tab");
 
-export async function handleUserLogout() {
-  await requestJson("/api/logout", { method: "POST" });
-  window.location.href = "/login";
-}
-
-async function handleUserLogin(event) {
-  event.preventDefault();
-  setText("userLoginMessage", "");
-
-  const result = await postJson("/api/login", {
-    username: document.getElementById("loginUsername").value.trim(),
-    password: document.getElementById("loginPassword").value
+  // Tab switching
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      tabs.forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".auth-form").forEach(f => f.classList.remove("active"));
+      
+      tab.classList.add("active");
+      document.getElementById(tab.dataset.target).classList.add("active");
+      setText("authMessage", "");
+    });
   });
 
-  if (result?.error) {
-    setText("userLoginMessage", result.error);
-    return;
+  // Toggle Admin / User login
+  if (toggleAdminBtn) {
+    toggleAdminBtn.addEventListener("click", () => {
+      if (loginType.value === "user") {
+        loginType.value = "admin";
+        loginTitle.textContent = "Admin Login";
+        toggleAdminBtn.textContent = "Log in as User";
+      } else {
+        loginType.value = "user";
+        loginTitle.textContent = "User Login";
+        toggleAdminBtn.textContent = "Log in as Admin";
+      }
+    });
   }
 
-  window.location.href = "/user-dashboard";
-}
+  if (loginForm) {
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      setText("authMessage", "");
 
-async function handleUserRegister(event) {
-  event.preventDefault();
-  setText("registerMessage", "");
+      const isUser = loginType.value === "user";
+      const endpoint = isUser ? "/api/login" : "/api/admin/login";
+      const redirect = isUser ? "/dashboard" : "/admin";
 
-  const result = await postJson("/api/register", {
-    username: document.getElementById("registerUsername").value.trim(),
-    password: document.getElementById("registerPassword").value
-  });
+      const result = await postJson(endpoint, {
+        username: document.getElementById("loginUsername").value.trim(),
+        password: document.getElementById("loginPassword").value
+      });
 
-  if (result?.error) {
-    setText("registerMessage", result.error);
-    return;
+      if (!result?.authenticated && result?.error) {
+        setText("authMessage", result.error || "Invalid credentials.");
+        return;
+      }
+
+      if (result?.authenticated || result?.user) {
+         window.location.href = redirect;
+      } else {
+         setText("authMessage", "Invalid credentials.");
+      }
+    });
   }
 
-  window.location.href = "/user-dashboard";
+  if (registerForm) {
+    registerForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      setText("authMessage", "");
+
+      const result = await postJson("/api/register", {
+        username: document.getElementById("regUsername").value.trim(),
+        password: document.getElementById("regPassword").value
+      });
+
+      if (result?.error) {
+        setText("authMessage", result.error);
+        return;
+      }
+
+      window.location.href = "/dashboard";
+    });
+  }
 }

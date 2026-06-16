@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | Graph Fraud Detection</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body data-page="dashboard">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">GF</div>
+      <div class="brand-text">
+        <strong>Graph Fraud Detection</strong>
+        <small>Intelligent Monitoring</small>
+      </div>
+    </div>
+    <nav class="nav-links">
+      <a href="/dashboard" class="nav-button" aria-current="page">Dashboard</a>
+      <button class="nav-button" id="userLogoutButton" type="button">Logout</button>
+    </nav>
+  </header>
+
+  <main class="app-shell">
+    
+    <!-- User Overview & Pipeline Status -->
+    <section class="panel" style="margin-bottom: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; background: linear-gradient(135deg, rgba(79, 138, 255, 0.05), rgba(157, 78, 221, 0.05));">
+      <div>
+        <p class="eyebrow" id="userAccountText">Welcome back</p>
+        <h1 style="font-size: 2.2rem; margin-bottom: 16px;" id="userDashboardTitle">User Dashboard</h1>
+        <p style="color: var(--muted); font-size: 1.05rem;">
+          Assess transaction risk with graph-aware signals in real-time. The ML pipeline uses PageRank, degree, and clustering to detect anomalies.
+        </p>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: center; justify-content: flex-end;">
+        <div style="text-align: right; background: rgba(0,0,0,0.2); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--line);">
+          <span style="font-size: 0.8rem; color: var(--muted); text-transform: uppercase;">Total Trans</span>
+          <strong style="display: block; font-size: 1.5rem; color: var(--text);" id="userTotalTransactions">0</strong>
+        </div>
+        <div style="text-align: right; background: rgba(0,0,0,0.2); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--line);">
+          <span style="font-size: 0.8rem; color: var(--muted); text-transform: uppercase;">Fraud Flags</span>
+          <strong style="display: block; font-size: 1.5rem; color: var(--warning);" id="userFlaggedTransactions">0</strong>
+        </div>
+        <div style="text-align: right; background: rgba(0,0,0,0.2); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--line);">
+          <span style="font-size: 0.8rem; color: var(--muted); text-transform: uppercase;">Personal Risk</span>
+          <strong style="display: block; font-size: 1.5rem; color: var(--danger);" id="userPersonalRisk">0%</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scanner & Graph Grid -->
+    <section class="workspace-grid">
+      <form class="panel" id="transactionForm">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Transaction Scanner</p>
+            <h2>New Transfer</h2>
+          </div>
+          <span style="font-size: 0.85rem; padding: 4px 12px; border: 1px solid var(--primary); color: var(--primary); border-radius: 20px;">Live Model API</span>
+        </div>
+
+        <div class="field-grid">
+          <label>
+            Sender Account (Your ID)
+            <input id="sender" name="sender" type="text" autocomplete="off" placeholder="C1231006815" required>
+          </label>
+          <label>
+            Receiver Account
+            <input id="receiver" name="receiver" type="text" autocomplete="off" placeholder="M1979787155" required>
+          </label>
+          <label>
+            Amount
+            <input id="amount" name="amount" type="number" min="1" step="0.01" placeholder="9839.64" required>
+          </label>
+          <label>
+            Transfer Type
+            <select id="type" name="type">
+              <option value="PAYMENT">PAYMENT</option>
+              <option value="TRANSFER">TRANSFER</option>
+              <option value="CASH_OUT">CASH_OUT</option>
+              <option value="DEBIT">DEBIT</option>
+              <option value="CASH_IN">CASH_IN</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="quick-actions">
+          <button type="button" data-sample="normal">Load Normal Sample</button>
+          <button type="button" data-sample="highRisk">Load High-Risk Sample</button>
+        </div>
+
+        <button class="primary-action" type="submit">Assess Risk & Submit</button>
+
+        <div class="result-card" id="resultCard" style="display: none;">
+          <span class="eyebrow">Scan Result</span>
+          <strong id="resultTitle" style="display:block; font-size:1.4rem; margin-bottom:8px;">Awaiting Transaction</strong>
+          <p id="resultText" style="color:var(--muted); font-size:0.95rem; margin-bottom: 0;">Evaluating risk...</p>
+          <div class="risk-meter">
+            <span id="riskFill"></span>
+          </div>
+        </div>
+      </form>
+
+      <div class="panel graph-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Network Topology</p>
+            <h2>Live Graph View</h2>
+          </div>
+          <span id="graphSummary" style="font-size: 0.85rem; color: var(--primary);">0 nodes</span>
+        </div>
+        <canvas id="networkCanvas" height="420" style="background: rgba(0,0,0,0.3); border: 1px solid var(--line); border-radius: 8px;"></canvas>
+      </div>
+    </section>
+
+    <!-- Live Scanner Analytics Grid -->
+    <section class="analytics-grid">
+      <article class="metric-card">
+        <span>Scanned Txs</span>
+        <strong id="totalTransactions">0</strong>
+      </article>
+      <article class="metric-card">
+        <span>Local Flags</span>
+        <strong id="flaggedTransactions">0</strong>
+      </article>
+      <article class="metric-card">
+        <span>Session Risk</span>
+        <strong id="averageRisk">0%</strong>
+      </article>
+      <article class="metric-card">
+        <span>Network Nodes</span>
+        <strong id="knownAccounts">0</strong>
+      </article>
+    </section>
+
+    <!-- Monitor Audit Trail & Risk Chart -->
+    <section class="workspace-grid bottom-grid">
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Risk trend</p>
+            <h2>Latest Scans</h2>
+          </div>
+        </div>
+        <canvas id="riskChart" height="160"></canvas>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Scanner Audit</p>
+            <h2>Session Trial</h2>
+          </div>
+          <a class="nav-button" href="/graph" target="_blank" rel="noopener" style="font-size: 0.85rem;">Open Full PyVis</a>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Sender</th>
+                <th>Receiver</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Risk</th>
+              </tr>
+            </thead>
+            <tbody id="transactionTable"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <!-- Saved Transaction History -->
+    <section class="panel" style="margin-top: 24px;">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Database Records</p>
+          <h2>Your Transaction History</h2>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Time</th>
+              <th>Receiver</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Risk Score</th>
+            </tr>
+          </thead>
+          <tbody id="userTransactionsTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script type="module" src="/static/js/app.js"></script>
+  <script>
+    // Ensure result card is shown properly when scanning begins
+    const origSubmit = window.handleTransactionSubmit; // just to show it, handled in JS natively
+    document.getElementById("transactionForm").addEventListener("submit", () => {
+      document.getElementById("resultCard").style.display = "block";
+    });
+  </script>
+</body>
+</html>
