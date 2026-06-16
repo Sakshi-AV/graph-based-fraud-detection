@@ -1,9 +1,7 @@
 import { requestJson } from "../api.js";
-import { handleUserLogout } from "../auth/userAuth.js";
 import { escapeHtml, formatCurrency, formatPercent, formatTime, setText } from "../utils.js";
 
 export async function initUserDashboardPage() {
-  document.getElementById("userLogoutButton").addEventListener("click", handleUserLogout);
   await loadUserDashboard();
 }
 

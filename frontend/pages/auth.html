@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authentication | Graph Fraud Detection</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body data-page="auth">
+  <header class="topbar">
+    <a href="/" class="brand">
+      <div class="brand-mark">GF</div>
+      <div class="brand-text">
+        <strong>Graph Fraud Detection</strong>
+        <small>Return to Home</small>
+      </div>
+    </a>
+  </header>
+
+  <main class="app-shell" style="display: flex; align-items: center; justify-content: center; min-height: 80vh;">
+    <section class="panel" style="width: 100%; max-width: 440px; padding: 40px;">
+      
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-target="loginForm">Sign In</button>
+        <button class="auth-tab" data-target="registerForm">Create Account</button>
+      </div>
+
+      <div id="authMessage" class="form-message"></div>
+
+      <!-- User/Admin Login Form -->
+      <form id="loginForm" class="auth-form active">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2 style="font-size: 1.5rem;" id="loginTitle">User Login</h2>
+          <button type="button" id="toggleAdminBtn" style="background:none; border:none; color: var(--primary); font-size: 0.85rem; cursor: pointer;">Log in as Admin</button>
+        </div>
+        
+        <input type="hidden" id="loginType" value="user">
+
+        <div class="field-grid">
+          <label>
+            Username
+            <input type="text" id="loginUsername" required placeholder="Enter your username">
+          </label>
+          <label>
+            Password
+            <input type="password" id="loginPassword" required placeholder="Enter your password">
+          </label>
+        </div>
+        <button type="submit" class="primary-action" style="margin-top: 24px;">Sign In</button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="registerForm" class="auth-form">
+        <h2 style="font-size: 1.5rem; margin-bottom: 20px;">Register</h2>
+        <div class="field-grid">
+          <label>
+            Username
+            <input type="text" id="regUsername" required minlength="3" placeholder="Choose a username">
+          </label>
+          <label>
+            Password
+            <input type="password" id="regPassword" required minlength="6" placeholder="Choose a password (6+ chars)">
+          </label>
+        </div>
+        <button type="submit" class="primary-action" style="margin-top: 24px;">Create Account</button>
+      </form>
+
+    </section>
+  </main>
+
+  <script type="module" src="/static/js/app.js"></script>
+</body>
+</html>

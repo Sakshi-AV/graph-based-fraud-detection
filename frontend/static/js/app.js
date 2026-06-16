@@ -1,5 +1,5 @@
 import { initAdminAuth } from "./auth/adminAuth.js";
-import { initLoginPage, initRegisterPage } from "./auth/userAuth.js";
+import { initAuthPage } from "./auth/userAuth.js";
 import { initAdminDashboard } from "./dashboard/adminDashboard.js";
 import { initUserDashboardPage } from "./dashboard/userDashboard.js";
 import { initMonitorPage } from "./monitor/scanner.js";
@@ -7,8 +7,8 @@ import { initMonitorPage } from "./monitor/scanner.js";
 document.addEventListener("DOMContentLoaded", () => {
   const page = document.body.dataset.page;
 
-  if (page === "monitor") {
-    initMonitorPage();
+  if (page === "auth") {
+    initAuthPage();
   }
 
   if (page === "admin") {
@@ -16,16 +16,16 @@ document.addEventListener("DOMContentLoaded", () => {
     initAdminAuth();
   }
 
-  if (page === "login") {
-    initLoginPage();
-  }
-
-  if (page === "register") {
-    initRegisterPage();
-  }
-
-  if (page === "user-dashboard") {
+  if (page === "dashboard") {
+    initMonitorPage();
     initUserDashboardPage();
+
+    const logoutBtn = document.getElementById("userLogoutButton");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", async () => {
+        await fetch("/api/logout", { method: "POST" });
+        window.location.href = "/login";
+      });
+    }
   }
 });
-

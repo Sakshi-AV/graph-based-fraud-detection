@@ -12,9 +12,7 @@ pages_bp = Blueprint("pages", __name__)
 
 @pages_bp.route("/")
 def home():
-    if not session.get("user_id"):
-        return send_from_directory(PAGES_DIR, "login.html"), 302, {"Location": "/login"}
-    return send_from_directory(PAGES_DIR, "index.html")
+    return send_from_directory(PAGES_DIR, "landing.html")
 
 
 @pages_bp.route("/admin")
@@ -24,19 +22,19 @@ def admin():
 
 @pages_bp.route("/login")
 def login_page():
-    return send_from_directory(PAGES_DIR, "login.html")
+    return send_from_directory(PAGES_DIR, "auth.html")
 
 
 @pages_bp.route("/register")
 def register_page():
-    return send_from_directory(PAGES_DIR, "register.html")
+    return send_from_directory(PAGES_DIR, "auth.html")
 
 
-@pages_bp.route("/user-dashboard")
-def user_dashboard_page():
+@pages_bp.route("/dashboard")
+def dashboard_page():
     if not session.get("user_id"):
-        return send_from_directory(PAGES_DIR, "login.html"), 302, {"Location": "/login"}
-    return send_from_directory(PAGES_DIR, "user-dashboard.html")
+        return send_from_directory(PAGES_DIR, "auth.html"), 302, {"Location": "/login"}
+    return send_from_directory(PAGES_DIR, "dashboard.html")
 
 
 @pages_bp.route("/graph")
