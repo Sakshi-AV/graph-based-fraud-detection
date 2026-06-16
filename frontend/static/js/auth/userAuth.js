@@ -22,6 +22,11 @@ export function initAuthPage() {
     });
   });
 
+  if (window.location.pathname === "/register") {
+    const regTab = Array.from(tabs).find(t => t.dataset.target === "registerForm");
+    if (regTab) regTab.click();
+  }
+
   // Toggle Admin / User login
   if (toggleAdminBtn) {
     toggleAdminBtn.addEventListener("click", () => {

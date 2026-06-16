@@ -28,29 +28,88 @@
         Uncover hidden patterns and assess transaction risk in real-time with our advanced machine learning models and dynamic graph analytics. Prevent fraud before it happens.
       </p>
       <div style="display: flex; gap: 16px; justify-content: center;">
-        <a href="/register" class="primary-action" style="max-width: 200px; display: inline-block; text-align: center;">Get Started Today</a>
-        <a href="#features" class="nav-button" style="border: 1px solid var(--line); display: inline-block;">Explore Features</a>
+        <a href="/register" class="primary-action" style="max-width: 200px; display: inline-block; text-align: center; text-decoration: none;">Get Started Today</a>
+        <a href="#features" class="nav-button" style="border: 1px solid var(--line); display: inline-block; padding: 14px 24px; font-weight: 600;">Explore Features</a>
       </div>
     </section>
 
-    <section id="features" class="workspace-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-top: 60px;">
-      <div class="panel">
-        <h2 style="margin-bottom: 16px;">Real-time Network Analysis</h2>
-        <p style="color: var(--muted);">
-          Our proprietary graph builder constructs complex relationship networks across accounts to detect rings of fraud that traditional tabular methods miss.
+    <!-- PROJECT INFO / FEATURES SECTION -->
+    <section id="features" style="margin-top: 80px; padding-top: 40px;">
+      <div style="text-align: center; margin-bottom: 60px;">
+        <p class="eyebrow">About the Project</p>
+        <h2 style="font-size: 2.5rem; margin-bottom: 16px;">Next-Generation Transaction Monitoring</h2>
+        <p style="color: var(--muted); max-width: 800px; margin: 0 auto; font-size: 1.1rem;">
+          Traditional tabular methods struggle to detect complex fraud rings. By leveraging graph theory and NetworkX, we model transactions as dynamic networks, evaluating relationships between entities to uncover sophisticated financial crimes.
         </p>
       </div>
-      <div class="panel">
-        <h2 style="margin-bottom: 16px;">Machine Learning Core</h2>
-        <p style="color: var(--muted);">
-          Trained on high-volume financial datasets, our ensemble model evaluates PageRank, degree centrality, and clustering coefficients to flag high-risk transfers instantly.
-        </p>
+
+      <div class="workspace-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom: 60px;">
+        <div class="panel">
+          <h3 style="font-size: 1.5rem; margin-bottom: 16px; color: var(--primary);">Real-time Network Analysis</h3>
+          <p style="color: var(--text); line-height: 1.6;">
+            Our proprietary graph builder constructs complex relationship networks across accounts to detect rings of fraud that traditional tabular methods miss.
+          </p>
+        </div>
+        <div class="panel">
+          <h3 style="font-size: 1.5rem; margin-bottom: 16px; color: var(--secondary);">Machine Learning Core</h3>
+          <p style="color: var(--text); line-height: 1.6;">
+            Trained on high-volume financial datasets (PaySim), our ensemble Balanced Random Forest evaluates PageRank, degree centrality, and clustering coefficients to flag high-risk transfers instantly.
+          </p>
+        </div>
+        <div class="panel">
+          <h3 style="font-size: 1.5rem; margin-bottom: 16px; color: var(--accent);">Unified Dashboard</h3>
+          <p style="color: var(--text); line-height: 1.6;">
+            Monitor transactions, visualize node relationships in a PyVis-powered live graph, and track your organizational risk footprint all from a single pane of glass.
+          </p>
+        </div>
       </div>
-      <div class="panel">
-        <h2 style="margin-bottom: 16px;">Unified Dashboard</h2>
-        <p style="color: var(--muted);">
-          Monitor transactions, visualize node relationships, and track your organizational risk footprint all from a single pane of glass.
+
+      <!-- Deep Dive Section -->
+      <div class="panel" style="margin-bottom: 60px;">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">The Architecture</p>
+            <h2 style="font-size: 2rem;">How It Works Under The Hood</h2>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 24px;">
+          <div>
+            <h4 style="font-size: 1.2rem; margin-bottom: 8px;">1. The PaySim Dataset</h4>
+            <p style="color: var(--muted); margin-bottom: 24px;">
+              Our model is trained on a synthetic dataset representing mobile money transactions. By analyzing millions of legitimate and fraudulent cash-outs and transfers, the system learns the subtle differences between normal behavior and organized theft.
+            </p>
+            
+            <h4 style="font-size: 1.2rem; margin-bottom: 8px;">2. Graph Feature Extraction</h4>
+            <p style="color: var(--muted); margin-bottom: 24px;">
+              Before making a prediction, the backend constructs a NetworkX directed graph. It calculates critical graph-theoretic metrics for every account involved in a transaction:
+              <ul style="margin-top: 8px; margin-left: 20px; color: var(--muted);">
+                <li><strong>PageRank:</strong> Identifies central "hub" accounts often used for laundering.</li>
+                <li><strong>In/Out Degree:</strong> Detects anomalies in receiving vs. sending volumes.</li>
+                <li><strong>Clustering Coefficient:</strong> Spots tightly knit groups of accounts coordinating illicit transfers.</li>
+              </ul>
+            </p>
+          </div>
+          <div>
+            <h4 style="font-size: 1.2rem; margin-bottom: 8px;">3. The Ensemble Model</h4>
+            <p style="color: var(--muted); margin-bottom: 24px;">
+              Because financial fraud is extremely imbalanced (fraud occurs in less than 0.1% of transactions), standard models fail. We utilize a <strong>Balanced Random Forest Classifier</strong> that is highly sensitive to minority classes, combined with SMOTE (Synthetic Minority Over-sampling Technique).
+            </p>
+
+            <h4 style="font-size: 1.2rem; margin-bottom: 8px;">4. Tech Stack</h4>
+            <p style="color: var(--muted); margin-bottom: 24px;">
+              The system operates entirely via a REST API. The backend is powered by <strong>Python (Flask)</strong>, <strong>Scikit-Learn</strong>, and <strong>NetworkX</strong>. The frontend uses a proprietary vanilla JavaScript component framework with <strong>Chart.js</strong> for analytics and HTML Canvas for live topology rendering.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Call to Action -->
+      <div class="panel" style="text-align: center; background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05));">
+        <h2 style="font-size: 2rem; margin-bottom: 16px;">Ready to secure your network?</h2>
+        <p style="color: var(--muted); max-width: 600px; margin: 0 auto 32px; font-size: 1.1rem;">
+          Try out the live transaction scanner and watch the graph evolve in real-time as you submit data.
         </p>
+        <a href="/register" class="primary-action" style="max-width: 200px; display: inline-block; text-align: center; text-decoration: none;">Create an Account</a>
       </div>
     </section>
   </main>

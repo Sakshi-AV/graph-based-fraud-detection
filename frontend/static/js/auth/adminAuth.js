@@ -33,9 +33,7 @@ async function handleAdminLogin(event) {
 
 async function handleAdminLogout() {
   await requestJson("/api/admin/logout", { method: "POST" });
-  document.getElementById("adminDashboard").classList.add("hidden");
-  document.getElementById("adminLoginView").classList.remove("hidden");
-  document.getElementById("adminPassword").value = "";
+  window.location.href = "/";
 }
 
 function showAdminDashboard() {
